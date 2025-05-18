@@ -1,0 +1,4 @@
+{
+  "device": "cuda",
+  "dataset_path": "./Data/images"
+}
