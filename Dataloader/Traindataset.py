@@ -7,7 +7,7 @@ import math
 import os
 from PIL import Image
 import numpy as np
-from utils import get_config
+from utils import get_config, extract_patches
 
 device = get_config('device')
 
@@ -41,38 +41,11 @@ class TrainDataset(Dataset):
         print(f'{image_path}: loaded {len(images)} images')
         return images
 
-    def extract_patches(self, image, patch_size, stride, ratio=1):
-        patches = []
-        h, w = image.size
-        n_patches = math.floor(ratio*ratio*(h * w) // (patch_size * patch_size))
-        maxlen = math.floor(n_patches - self.drop_ratio*n_patches)
-        image = np.array(image)
-
-        central_h = int(h * ratio)
-        central_w = int(w * ratio)
-
-        top = (h - central_h) // 2
-        left = (w - central_w) // 2
-        bottom = top + central_h
-        right = left + central_w
-
-        for i in range(top, bottom  , stride):
-            if (len(patches) == maxlen):
-              break
-            for j in range(left, right  , stride):
-                if (len(patches) == maxlen):
-                  break
-                patch = image[i:i+patch_size, j:j+patch_size, :]
-                patch = Image.fromarray(patch)
-                patch = self.transform(patch)
-                patches.append(patch)
-        return torch.stack(patches).to(self.device)
-
     def precompute(self):
         for i in range(self.num_images):
-            wide_patches = self.extract_patches(self.wide_images[i], 128, 128)
-            narrow_patches = self.extract_patches(self.narrow_images[i], 256, 256)
-            original_patches = self.extract_patches(self.original_images[i], 256, 256)
+            wide_patches = extract_patches(self.wide_images[i], 128, 128)
+            narrow_patches = extract_patches(self.narrow_images[i], 256, 256)
+            original_patches = extract_patches(self.original_images[i], 256, 256)
             base_image = self.original_images[i]
             self.patch_mappings.append((wide_patches, narrow_patches, original_patches, base_image))
         print(f'Patches per image {len(self.patch_mappings[0][1])}')
