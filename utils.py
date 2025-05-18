@@ -61,7 +61,9 @@ def reconstruct(patches, base):
 
   return res
 
-def save_checkpoint(epoch, g_loss, d_loss, train_disc):
+def save_checkpoint(epoch, state, train_disc):
+  generator, discriminator, g_loss, d_loss, g_optim, d_optim = state[0], state[1], state[2], state[3], state[4], state[5]
+  
   timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
   suffix = f'ep_{epoch+1}-{timestamp}.pth'
   gen_checkpoint = {
