@@ -12,7 +12,10 @@ from PIL import Image
 def get_config(key):
    with open('config.json') as f:
       config = json.load(f)
-      return config[key]
+      if key in config:
+        return config[key]
+      else:
+         raise Exception(f'Item {key} not found in config.json')
    
 device = get_config('device')
 
