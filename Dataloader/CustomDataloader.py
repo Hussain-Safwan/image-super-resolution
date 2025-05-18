@@ -9,7 +9,7 @@ class CustomDataloader:
   def getData(self, num_data=None):
     if num_data == None or num_data > self.size:
       num_data = self.size
-      progress = tqdm(
+      progress = tqdm.tqdm(
           total=num_data,
           desc='Loading data',
           leave=False,

@@ -97,7 +97,7 @@ def discriminator_pass(image_idx, image, base_image, epoch, tqdm_bar):
 def train_model(dataloader, n_epochs, train_disc=False):
     print(f'Total images: {len(dataloader)}, total iterations: {n_epochs*len(dataloader)}')
     for epoch in range(n_epochs):
-      tqdm_bar = tqdm(
+      tqdm_bar = tqdm.tqdm(
         total=len(dataloader),
         desc=f'Epoch {epoch+1}',
         leave=False,
@@ -111,7 +111,15 @@ def train_model(dataloader, n_epochs, train_disc=False):
 
         g_loss = generator_pass(image_idx, image, base_image, epoch, tqdm_bar, train_disc)
 
-      save_checkpoint(epoch, g_loss, d_loss, train_disc)
+      state = (
+         generator, 
+         discriminator,
+         g_loss,
+         d_loss,
+         g_optim,
+         d_optim
+      )
+      save_checkpoint(epoch, state, train_disc)
       tqdm_bar.close()
 
 
