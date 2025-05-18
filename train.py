@@ -9,7 +9,9 @@ from Models.Generator import get_generator
 from Models.Discriminator import get_discriminator
 from Loss.generator_loss import generator_loss
 from Loss.discriminator_loss import discriminator_loss
+import warnings
 
+warnings.filterwarnings('ignore')
 device = get_config('device')
 dataset_path = get_config('dataset_path')
 gen_checkpoint_path = get_config('gen_cp_path')

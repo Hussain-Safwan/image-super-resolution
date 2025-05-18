@@ -6,6 +6,8 @@ import datetime
 import torchvision.transforms as transforms
 import numpy as np
 import json
+import math
+from PIL import Image
 
 def get_config(key):
    with open('config.json') as f:
@@ -32,6 +34,33 @@ def compute_boundary_map(height, width, patch_size=256, thickness=1):
         mask[:, max(0, y - thickness // 2):min(height, y + thickness // 2 + 1), :] = 1.0
 
     return mask
+
+def extract_patches(image, patch_size, stride, drop_ratio=0.0, ratio=1):
+        patches = []
+        h, w = image.size
+        n_patches = math.floor(ratio*ratio*(h * w) // (patch_size * patch_size))
+        maxlen = math.floor(n_patches - drop_ratio*n_patches)
+        image = np.array(image)
+
+        central_h = int(h * ratio)
+        central_w = int(w * ratio)
+
+        top = (h - central_h) // 2
+        left = (w - central_w) // 2
+        bottom = top + central_h
+        right = left + central_w
+
+        for i in range(top, bottom  , stride):
+            if (len(patches) == maxlen):
+              break
+            for j in range(left, right  , stride):
+                if (len(patches) == maxlen):
+                  break
+                patch = image[i:i+patch_size, j:j+patch_size, :]
+                patch = Image.fromarray(patch)
+                patch = transform(patch)
+                patches.append(patch)
+        return torch.stack(patches).to(device)
 
 def reconstruct(patches, base):
   res = cv2.cvtColor(np.array(base), cv2.COLOR_RGB2BGR)
