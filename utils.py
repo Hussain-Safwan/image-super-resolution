@@ -65,12 +65,9 @@ def extract_patches(image, patch_size, stride, drop_ratio=0.0, ratio=1):
                 patches.append(patch)
         return torch.stack(patches).to(device)
 
-def reconstruct(patches, base):
+def reconstruct(patches, base, original_dim, patch_dim):
   res = cv2.cvtColor(np.array(base), cv2.COLOR_RGB2BGR)
-  res = cv2.resize(res, (1024, 1024), interpolation=cv2.INTER_AREA)
-
-  original_dim = 1024
-  patch_dim = 256
+  res = cv2.resize(res, (original_dim, original_dim), interpolation=cv2.INTER_AREA)
 
   n_width = original_dim // patch_dim
   n_height = original_dim // patch_dim
@@ -92,6 +89,15 @@ def reconstruct(patches, base):
       patch_no += 1
 
   return res
+
+def find_appr_dim(dim):
+  lower = (dim // 16) * 16
+  upper = lower + 16
+
+  if dim - lower < upper - dim:
+    return lower
+  else:
+    return upper
 
 def save_checkpoint(epoch, state, train_disc):
   generator, discriminator, g_loss, d_loss, g_optim, d_optim = state[0], state[1], state[2], state[3], state[4], state[5]
