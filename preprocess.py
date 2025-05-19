@@ -3,7 +3,7 @@ import numpy as np
 from PIL import Image
 import os
 import sys
-from utils import get_config
+from utils import get_config, find_appr_dim
 
 def create_narrow_fov(image, ratio):
     width, height = image.size
@@ -29,6 +29,21 @@ def downsize_wide_fov(image, factor=2):
 
     return resized_image
 
+def simluate_single_image(image):
+    w, h = image.size
+    wide_dim = min(int(w/2), int(h/2))
+    wide_dim = find_appr_dim(wide_dim)
+
+    narrow_image = create_narrow_fov(image, 3/5)
+    x, y = narrow_image.size
+    n_square = min(x, y)
+    n_square = find_appr_dim(n_square)
+
+    wide_image = image.resize((wide_dim, wide_dim))
+    narrow_image = narrow_image.resize((n_square, n_square))
+
+    return wide_image, narrow_image
+
 if __name__ == "__main__":
 
     narrow_ratio = get_config('narrow_ratio')
@@ -39,12 +54,11 @@ if __name__ == "__main__":
         img_path = sys.argv[2]
         image = Image.open(img_path)
         filename = os.path.basename(img_path).split('.')[0]
-        wide = downsize_wide_fov(image)
-        narrow = create_narrow_fov(image, narrow_ratio)
+        wide, narrow = simluate_single_image(image)
 
         uploads_path = get_config('uploads_path')
-        narrow.save(f'{uploads_path}/{filename}_wide.jpg')
-        wide.save(f'{uploads_path}/{filename}_narrow.jpg')
+        wide.save(f'{uploads_path}/{filename}_wide.jpg')
+        narrow.save(f'{uploads_path}/{filename}_narrow.jpg')
 
         print(f'Processed narrow and wide images save at {uploads_path}')
 
