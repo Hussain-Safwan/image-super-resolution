@@ -60,7 +60,8 @@ def generator_pass(image_idx, image, base_image, epoch, tqdm_bar, train_disc, fa
     sr_patches = [
         patch.detach().cpu().squeeze().permute(1, 2, 0).numpy() for patch in sr_patches
     ]
-    sr_image = reconstruct(sr_patches, base_image)
+
+    sr_image = reconstruct(sr_patches, base_image, (1024, 1024), sr_patches[0].shape)
     sr_image = torch.from_numpy(sr_image).unsqueeze(0).permute(0, 3, 2, 1).to(device)
     boundary_map = boundary_map.unsqueeze(0).to(device)
 
@@ -83,7 +84,8 @@ def discriminator_pass(image_idx, image, base_image, epoch, tqdm_bar):
   sr_patches = [
         patch.detach().cpu().squeeze().permute(1, 2, 0).numpy() for patch in sr_patches
   ]
-  sr_image = reconstruct(sr_patches, base_image)
+
+  sr_image = reconstruct(sr_patches, base_image, (1024, 1024), sr_patches[0].shape)
   sr_image = torch.from_numpy(sr_image).unsqueeze(0).permute(0, 3, 2, 1).to(device)
   base_image = torch.from_numpy(np.array(base_image)).unsqueeze(0).permute(0, 3, 2, 1).to(device)
   boundary_map = boundary_map.unsqueeze(0).to(device)
