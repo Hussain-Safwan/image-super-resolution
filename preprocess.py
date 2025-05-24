@@ -5,6 +5,8 @@ import os
 import sys
 from utils import get_config, find_appr_dim
 
+patch_per_image = get_config("patch_per_image")
+
 def create_narrow_fov(image, ratio):
     width, height = image.size
     new_width = int(width * ratio)  
@@ -32,11 +34,11 @@ def downsize_wide_fov(image, factor=2):
 def simluate_single_image(image):
     w, h = image.size
     wide_w, wide_h = int(w/2), int(h/2)
-    wide_w, wide_h = find_appr_dim(wide_w, 16), find_appr_dim(wide_h, 16)
+    wide_w, wide_h = find_appr_dim(wide_w, patch_per_image), find_appr_dim(wide_h, patch_per_image)
 
     narrow_image = create_narrow_fov(image, 3/5)
     x, y = narrow_image.size
-    narrow_w, narrow_h = find_appr_dim(x, 16), find_appr_dim(y, 16)
+    narrow_w, narrow_h = find_appr_dim(x, patch_per_image), find_appr_dim(y, patch_per_image)
 
     wide_image = image.resize((wide_w, wide_h))
     narrow_image = narrow_image.resize(((narrow_w, narrow_h)))

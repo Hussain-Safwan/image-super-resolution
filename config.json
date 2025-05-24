@@ -3,7 +3,10 @@
   "dataset_path": "./Dataset/",
   "num_images": 10,
   "start_index": 50,
+  "narrow_ratio": 0.6,
   "gen_cp_path": "./Models/checkpoints/generator.pth",
   "disc_cp_path": "./Models/checkpoints/discrimnator.pth",
-  "output_path": "./outputs/"
+  "output_path": "./outputs/",
+  "uploads_path": "./Dataset/uploads/",
+  "patch_per_image": 16
 }

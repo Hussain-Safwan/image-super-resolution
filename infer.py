@@ -9,13 +9,14 @@ from PIL import Image
 from Dataloader.PatchSimilarity import PatchSimilarity
 
 device = get_config('device')
+patch_per_image = get_config("patch_per_image")
 
 def get_similar_patches(wide_img, narrow_img):
     w, h = wide_img.size
     x, y = narrow_img.size
 
-    wide_patch_w, wide_patch_h = int(w/16), int(h/16)
-    narrow_patch_w, narrow_patch_h = int(x/16), int(y/16)
+    wide_patch_w, wide_patch_h = int(w/patch_per_image), int(h/patch_per_image)
+    narrow_patch_w, narrow_patch_h = int(x/patch_per_image), int(y/patch_per_image)
 
     wide_patches = extract_patches(wide_img, wide_patch_w, wide_patch_h)
     narrow_patches = extract_patches(narrow_img, narrow_patch_w, narrow_patch_h)
@@ -81,6 +82,6 @@ if __name__ == '__main__':
     print(f'Image save at {output_path}')
     
     # python infer.py ./Dataset/wide/00005.jpg ./Dataset/narrow/00005.jpg
-    # python infer.py ./Dataset/uploads/crod_wide.png ./Dataset/uploads/crod_narrow.png
-    # python preprocess.py --single ./crod.png 
+    # python infer.py ./Dataset/uploads/tween_wide.png ./Dataset/uploads/tween_narrow.png
+    # python preprocess.py --single ./tween.png 
 
