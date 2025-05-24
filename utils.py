@@ -38,10 +38,10 @@ def compute_boundary_map(height, width, patch_size=256, thickness=1):
 
     return mask
 
-def extract_patches(image, patch_size, stride, drop_ratio=0.0, ratio=1):
+def extract_patches(image, patch_size_w, patch_size_h, drop_ratio=0.0, ratio=1):
         patches = []
         h, w = image.size
-        n_patches = math.floor(ratio*ratio*(h * w) // (patch_size * patch_size))
+        n_patches = math.floor(ratio*ratio*(h * w) // (patch_size_w * patch_size_h))
         maxlen = math.floor(n_patches - drop_ratio*n_patches)
         image = np.array(image)
 
@@ -53,46 +53,49 @@ def extract_patches(image, patch_size, stride, drop_ratio=0.0, ratio=1):
         bottom = top + central_h
         right = left + central_w
 
-        for i in range(top, bottom  , stride):
+        row=1
+        for i in range(top, bottom, patch_size_w):
+            row = row+1
             if (len(patches) == maxlen):
               break
-            for j in range(left, right  , stride):
+            for j in range(left, right, patch_size_h):
                 if (len(patches) == maxlen):
                   break
-                patch = image[i:i+patch_size, j:j+patch_size, :]
+
+                patch = image[i:i+patch_size_w, j:j+patch_size_h, :]
                 patch = Image.fromarray(patch)
                 patch = transform(patch)
-                patches.append(patch)
+                if len(patches) == 0 or patches[0].shape == patch.shape:
+                  patches.append(patch)
         return torch.stack(patches).to(device)
 
 def reconstruct(patches, base, original_dim, patch_dim):
   res = cv2.cvtColor(np.array(base), cv2.COLOR_RGB2BGR)
-  res = cv2.resize(res, (original_dim, original_dim), interpolation=cv2.INTER_AREA)
+  res = cv2.resize(res, (original_dim[0], original_dim[1]), interpolation=cv2.INTER_AREA)
 
-  n_width = original_dim // patch_dim
-  n_height = original_dim // patch_dim
+  n_width = original_dim[0] // patch_dim[1]
+  n_height = original_dim[1] // patch_dim[0]
   patch_no = 0
 
   for i in range(n_width):
     for j in range(n_height):
 
-      x = i * patch_dim
-      y = j * patch_dim
+      x = i * patch_dim[0]
+      y = j * patch_dim[1]
       patch = patches[patch_no]
       patch = (patch * 255).astype(np.uint8)
 
       patch = cv2.cvtColor(patch, cv2.COLOR_RGB2BGR)
-      mask = np.ones((patch_dim, patch_dim), dtype=np.uint8) * 255
-      center = (y + patch_dim // 2, x + patch_dim // 2)
+      mask = np.ones(patch_dim, dtype=np.uint8) * 255
+      center = (y + patch_dim[1] // 2, x + patch_dim[0] // 2)
       res = cv2.seamlessClone(patch, res, mask, center, cv2.MIXED_CLONE)
-
       patch_no += 1
 
   return res
 
-def find_appr_dim(dim):
-  lower = (dim // 16) * 16
-  upper = lower + 16
+def find_appr_dim(dim, n):
+  lower = (dim // n) * n
+  upper = lower + n
 
   if dim - lower < upper - dim:
     return lower

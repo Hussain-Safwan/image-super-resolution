@@ -1,5 +1,5 @@
 from Models.Generator import get_generator
-from utils import get_config, extract_patches, reconstruct
+from utils import get_config, extract_patches, reconstruct, find_appr_dim
 import sys
 import os
 import cv2
@@ -8,6 +8,21 @@ from PIL import Image
 from Dataloader.PatchSimilarity import PatchSimilarity
 
 device = get_config('device')
+
+def get_similar_patches(wide_img, narrow_img):
+    w, h = wide_img.size
+    x, y = narrow_img.size
+
+    wide_patch_w, wide_patch_h = int(w/16), int(h/16)
+    narrow_patch_w, narrow_patch_h = int(x/16), int(y/16)
+
+    wide_patches = extract_patches(wide_img, wide_patch_w, wide_patch_h)
+    narrow_patches = extract_patches(narrow_img, narrow_patch_w, narrow_patch_h)
+
+    similarity = PatchSimilarity(wide_patches, narrow_patches)
+    patches = similarity.get_patches()
+
+    return patches
 
 def run_inference(generator, patches):
     wide_patches, narrow_patches, sr_patches = [], [], []
@@ -37,22 +52,16 @@ if __name__ == '__main__':
     narrow_img = Image.open(narrow_filepath).convert('RGB')
     generator, _ = get_generator(gen_model_path)
 
-    wide_dim, narrow_dim = wide_img.size[0], narrow_img.size[0]
-    wide_patch_size, narrow_patch_size = int(wide_dim/16), int(narrow_dim/16)
-
-    wide_patches = extract_patches(wide_img, wide_patch_size, wide_patch_size)
-    narrow_patches = extract_patches(narrow_img, narrow_patch_size, narrow_patch_size)
-
-    similarity = PatchSimilarity(wide_patches, narrow_patches)
-    patches = similarity.get_patches()
+    patches = get_similar_patches(wide_img, narrow_img)
     
     sr_patches = run_inference(generator, patches)
+    sr_patches = [patch.transpose(1, 0, 2) for patch in sr_patches]
 
     width, height = wide_img.size
     base = wide_img.resize((width * 2, height * 2))
 
-    patch_dim = sr_patches[0].shape[0]
-    original_dim = patch_dim * 16
+    patch_dim = (sr_patches[0].shape[0], sr_patches[0].shape[1])
+    original_dim = (find_appr_dim(width*2, patch_dim[1]), find_appr_dim(height*2, patch_dim[0]))
 
     output = reconstruct(sr_patches, base, original_dim, patch_dim)
 
@@ -60,5 +69,6 @@ if __name__ == '__main__':
     print(f'Image save at {output_path}')
     
     # python infer.py ./Dataset/wide/00005.jpg ./Dataset/narrow/00005.jpg
-    # python infer.py ./Dataset/uploads/me_wide.jpg ./Dataset/uploads/me_narrow.jpg
+    # python infer.py ./Dataset/uploads/crod_wide.png ./Dataset/uploads/crod_narrow.png
+    # python preprocess.py --single ./crod.png 
 

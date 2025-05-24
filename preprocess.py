@@ -31,16 +31,15 @@ def downsize_wide_fov(image, factor=2):
 
 def simluate_single_image(image):
     w, h = image.size
-    wide_dim = min(int(w/2), int(h/2))
-    wide_dim = find_appr_dim(wide_dim)
+    wide_w, wide_h = int(w/2), int(h/2)
+    wide_w, wide_h = find_appr_dim(wide_w, 16), find_appr_dim(wide_h, 16)
 
     narrow_image = create_narrow_fov(image, 3/5)
     x, y = narrow_image.size
-    n_square = min(x, y)
-    n_square = find_appr_dim(n_square)
+    narrow_w, narrow_h = find_appr_dim(x, 16), find_appr_dim(y, 16)
 
-    wide_image = image.resize((wide_dim, wide_dim))
-    narrow_image = narrow_image.resize((n_square, n_square))
+    wide_image = image.resize((wide_w, wide_h))
+    narrow_image = narrow_image.resize(((narrow_w, narrow_h)))
 
     return wide_image, narrow_image
 
@@ -53,12 +52,12 @@ if __name__ == "__main__":
 
         img_path = sys.argv[2]
         image = Image.open(img_path)
-        filename = os.path.basename(img_path).split('.')[0]
+        [filename, ext] = os.path.basename(img_path).split('.')
         wide, narrow = simluate_single_image(image)
 
         uploads_path = get_config('uploads_path')
-        wide.save(f'{uploads_path}/{filename}_wide.jpg')
-        narrow.save(f'{uploads_path}/{filename}_narrow.jpg')
+        wide.save(f'{uploads_path}/{filename}_wide.{ext}')
+        narrow.save(f'{uploads_path}/{filename}_narrow.{ext}')
 
         print(f'Processed narrow and wide images save at {uploads_path}')
 
