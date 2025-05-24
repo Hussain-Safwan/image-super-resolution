@@ -1,5 +1,6 @@
 from Models.Generator import get_generator
 from utils import get_config, extract_patches, reconstruct, find_appr_dim
+import tqdm
 import sys
 import os
 import cv2
@@ -31,12 +32,21 @@ def run_inference(generator, patches):
         wide_patches.append(patch[0])
         narrow_patches.append(patch[1])
 
+    tqdm_bar = tqdm.tqdm(
+        total=len(patches),
+        desc=f'Generating image',
+        leave=False,
+        position=0
+    )
+
     for w, n in zip(narrow_patches, wide_patches):
         w, n = w.unsqueeze(0).to(device), n.unsqueeze(0).to(device)
         generated_patch = generator(w, n)
         generated_patch = generated_patch.detach().cpu().squeeze().clamp(0, 1).permute(1, 2, 0).numpy()
         sr_patches.append(generated_patch)
+        tqdm_bar.update(1)
 
+    tqdm_bar.close()
     return sr_patches
 
 if __name__ == '__main__':
@@ -48,6 +58,8 @@ if __name__ == '__main__':
         raise Exception('Generator model not found.')
     
     wide_filepath, narrow_filepath = sys.argv[1], sys.argv[2]
+    print(f'Images loaded from {wide_filepath}, {narrow_filepath}')
+    
     wide_img = Image.open(wide_filepath).convert('RGB')
     narrow_img = Image.open(narrow_filepath).convert('RGB')
     generator, _ = get_generator(gen_model_path)

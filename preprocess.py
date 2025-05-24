@@ -51,6 +51,7 @@ if __name__ == "__main__":
     if single:
 
         img_path = sys.argv[2]
+        print(f'Preprocessing {img_path}...')
         image = Image.open(img_path)
         [filename, ext] = os.path.basename(img_path).split('.')
         wide, narrow = simluate_single_image(image)

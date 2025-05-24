@@ -50,5 +50,6 @@ def get_discriminator(filename):
     discriminator.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-  print(f'Discriminator checkpoint file: {"FOUND" if cp_found else "NOT_FOUND"}')
+    print(f'{f"Discriminator checkpoint loaded from {filename}" if cp_found else "Discriminator model not found. Proceeding with initialized weights."}')
+    
   return discriminator, optimizer

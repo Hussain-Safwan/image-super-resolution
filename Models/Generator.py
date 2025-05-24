@@ -88,5 +88,6 @@ def get_generator(filename):
     generator.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-  print(f'Generator checkpoint file: {"FOUND" if cp_found else "NOT_FOUND"}')
+  print(f'{f"Generator checkpoint loaded from {filename}" if cp_found else "Generator model not found. Proceeding with initialized weights."}')
+  
   return generator, optimizer
